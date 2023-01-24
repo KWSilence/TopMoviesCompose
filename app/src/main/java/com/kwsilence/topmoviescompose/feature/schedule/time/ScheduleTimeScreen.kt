@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
-import com.kwsilence.topmoviescompose.navigation.TopMoviesScaffold
+import com.kwsilence.topmoviescompose.navigation.scaffold.TopMoviesScaffold
 import com.kwsilence.topmoviescompose.navigation.top.TopMoviesTopAppBarItem
 import com.kwsilence.topmoviescompose.ui.component.OutlinedButtonWithText
 import com.kwsilence.topmoviescompose.ui.component.SubmitDialog

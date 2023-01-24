@@ -1,6 +1,6 @@
 package com.kwsilence.topmoviescompose.feature.movie.list
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -39,8 +41,8 @@ import androidx.compose.ui.unit.sp
 import com.kwsilence.topmoviescompose.domain.model.Movie
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
-import com.kwsilence.topmoviescompose.navigation.TopMoviesScaffold
 import com.kwsilence.topmoviescompose.navigation.bottom.TopMoviesBottomNavigationItem
+import com.kwsilence.topmoviescompose.navigation.scaffold.TopMoviesScaffold
 import com.kwsilence.topmoviescompose.ui.component.AsyncImageWithProgress
 import com.kwsilence.topmoviescompose.ui.component.CircularProgressWithNumber
 import com.kwsilence.topmoviescompose.ui.component.OutlinedButtonWithText
@@ -92,15 +94,15 @@ fun MovieListScreen(navGraph: NavGraph) {
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(movieList) { index, movie ->
-                    MovieRow(navGraph = navGraph, movie = movie)
                     if (index >= movieList.size - 1) viewModel.loadMoreMovies()
+                    MovieCard(navGraph = navGraph, movie = movie)
                 }
                 item {
                     if (state.showRetry)
-                        RetryRow(onRetry = { viewModel.loadMoreMovies(retry = true) })
+                        RetryCard(onRetry = { viewModel.loadMoreMovies(retry = true) })
                 }
                 item {
-                    LoadingRow(state = state)
+                    if (state.isLoading && state.canLoadMore) LoadingCard()
                 }
             }
             if (state.error != null && movieList.isEmpty()) {
@@ -116,93 +118,106 @@ fun MovieListScreen(navGraph: NavGraph) {
 }
 
 @Composable
-private fun MovieRow(navGraph: NavGraph, movie: Movie) {
-    Row(
-        modifier = Modifier
-            .clickable { navGraph.openMovieDetails(movie.id) }
-            .padding(5.dp)
-            .fillMaxWidth()
-            .height(imageWidth / imageRatio)
-    ) {
-        AsyncImageWithProgress(
-            modifier = Modifier
-                .requiredWidth(imageWidth)
-                .aspectRatio(imageRatio),
-            url = movie.posterUrl
-        )
-        Column(
-            modifier = Modifier.padding(5.dp)
-        ) {
-            Row {
-                CircularProgressWithNumber(progress = movie.voteAverage / 10f)
-                Spacer(modifier = Modifier.width(5.dp))
-                Column {
-                    Text(text = movie.title, style = titleTextStyle)
-                    Text(
-                        text = movie.releaseDate?.let { releaseDate ->
-                            FormatUtils.formatMovieReleaseDate(releaseDate)
-                        } ?: "None",
-                        style = dateTextStyle
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(5.dp))
-            Text(
-                modifier = Modifier.weight(1f),
-                text = movie.overview ?: "Overview is not presented.",
-                style = overviewTextStyle,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(5.dp))
-            OutlinedButtonWithText(
-                modifier = Modifier.fillMaxWidth(),
-                text = when (val schedule = movie.scheduled) {
-                    null -> "Schedule watching"
-                    else -> FormatUtils.formatScheduleDate(schedule)
-                },
-                onClick = { navGraph.openScheduleTime(movie.id) }
-            )
-        }
-    }
-    Spacer(
+private fun MovieListItemCard(content: @Composable () -> Unit) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(1.dp)
-            .background(color = MaterialTheme.colors.onBackground.copy(alpha = 0.3f))
+            .padding(vertical = 2.dp, horizontal = 5.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
+        ),
+        content = content
     )
 }
 
 @Composable
-private fun RetryRow(
-    messageText: String = "Retry loading",
-    retryText: String = "Retry",
-    onRetry: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(5.dp)
-    ) {
-        Text(
+private fun MovieCard(navGraph: NavGraph, movie: Movie) {
+    MovieListItemCard {
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .align(Alignment.CenterVertically),
-            text = messageText,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            modifier = Modifier
-                .clickable { onRetry() }
-                .padding(10.dp),
-            text = retryText,
-            color = MaterialTheme.colors.primary
-        )
+                .clickable { navGraph.openMovieDetails(movie.id) }
+                .padding(5.dp)
+                .fillMaxWidth()
+                .height(imageWidth / imageRatio)
+        ) {
+            AsyncImageWithProgress(
+                modifier = Modifier
+                    .requiredWidth(imageWidth)
+                    .aspectRatio(imageRatio)
+                    .clip(MaterialTheme.shapes.medium),
+                url = movie.posterUrl
+            )
+            Column(
+                modifier = Modifier.padding(5.dp)
+            ) {
+                Row {
+                    CircularProgressWithNumber(progress = movie.voteAverage / 10f)
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Column {
+                        Text(text = movie.title, style = titleTextStyle)
+                        Text(
+                            text = movie.releaseDate?.let { releaseDate ->
+                                FormatUtils.formatMovieReleaseDate(releaseDate)
+                            } ?: "None",
+                            style = dateTextStyle
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = movie.overview ?: "Overview is not presented.",
+                    style = overviewTextStyle,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(5.dp))
+                OutlinedButtonWithText(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = when (val schedule = movie.scheduled) {
+                        null -> "Schedule watching"
+                        else -> FormatUtils.formatScheduleDate(schedule)
+                    },
+                    onClick = { navGraph.openScheduleTime(movie.id) }
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun LoadingRow(state: MovieListScreenState) {
-    if (state.isLoading && state.canLoadMore) {
+private fun RetryCard(
+    messageText: String = "Retry loading",
+    retryText: String = "Retry",
+    onRetry: () -> Unit
+) {
+    MovieListItemCard {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .align(Alignment.CenterVertically),
+                text = messageText,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                modifier = Modifier
+                    .clickable { onRetry() }
+                    .padding(10.dp),
+                text = retryText,
+                color = MaterialTheme.colors.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingCard() {
+    MovieListItemCard {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

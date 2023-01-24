@@ -1,6 +1,6 @@
 package com.kwsilence.topmoviescompose.feature.schedule.list
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -33,8 +34,8 @@ import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.Movie
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
-import com.kwsilence.topmoviescompose.navigation.TopMoviesScaffold
 import com.kwsilence.topmoviescompose.navigation.bottom.TopMoviesBottomNavigationItem
+import com.kwsilence.topmoviescompose.navigation.scaffold.TopMoviesScaffold
 import com.kwsilence.topmoviescompose.ui.component.OutlinedButtonWithText
 import com.kwsilence.topmoviescompose.ui.component.SubmitDialog
 import com.kwsilence.topmoviescompose.ui.util.showToast
@@ -117,41 +118,45 @@ fun ScheduledMovieRow(
     onScheduleClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onMovieClick() }
-            .padding(10.dp)
-    ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = movie.title,
-            style = titleTextStyle
+            .padding(vertical = 2.dp, horizontal = 5.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
         )
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButtonWithText(
-                modifier = Modifier
-                    .weight(1f)
-                    .align(Alignment.CenterVertically),
-                text = movie.scheduled.toScheduleString(),
-                onClick = { onScheduleClick() }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onMovieClick() }
+                .padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 5.dp)
+        ) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = movie.title,
+                style = titleTextStyle
             )
-            Spacer(modifier = Modifier.width(2.dp))
-            Icon(
-                modifier = Modifier
-                    .clickable { onDeleteClick() }
-                    .padding(vertical = 5.dp, horizontal = 10.dp),
-                painter = painterResource(id = R.drawable.ic_delete),
-                contentDescription = null,
-                tint = MaterialTheme.colors.primary
-            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButtonWithText(
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically),
+                    text = movie.scheduled.toScheduleString(),
+                    onClick = { onScheduleClick() }
+                )
+                Spacer(modifier = Modifier.width(2.dp))
+                Icon(
+                    modifier = Modifier
+                        .clickable { onDeleteClick() }
+                        .padding(vertical = 5.dp, horizontal = 10.dp),
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = null,
+                    tint = MaterialTheme.colors.primary
+                )
+            }
         }
     }
-    Spacer(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(color = MaterialTheme.colors.onBackground.copy(alpha = 0.3f))
-    )
 }

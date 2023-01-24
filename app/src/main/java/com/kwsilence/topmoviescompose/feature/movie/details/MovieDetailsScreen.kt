@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -36,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.kwsilence.topmoviescompose.domain.model.MovieDetails
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
-import com.kwsilence.topmoviescompose.navigation.TopMoviesScaffold
+import com.kwsilence.topmoviescompose.navigation.scaffold.TopMoviesScaffold
 import com.kwsilence.topmoviescompose.ui.component.AsyncImageWithProgress
 import com.kwsilence.topmoviescompose.ui.component.CircularProgressWithNumber
 import com.kwsilence.topmoviescompose.ui.component.OutlinedButtonWithText
@@ -138,7 +140,8 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
                 AsyncImageWithProgress(
                     modifier = Modifier
                         .requiredWidth(imageWidth)
-                        .aspectRatio(imageRatio),
+                        .aspectRatio(imageRatio)
+                        .clip(MaterialTheme.shapes.medium),
                     url = details.posterUrl
                 )
                 Spacer(modifier = Modifier.width(5.dp))
