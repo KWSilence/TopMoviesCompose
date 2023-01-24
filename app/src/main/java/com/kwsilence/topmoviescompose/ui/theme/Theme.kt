@@ -43,7 +43,7 @@ fun TopMoviesComposeTheme(
     val uiColor = colors.primarySurface
     val systemUiController = rememberSystemUiController()
     SideEffect {
-        systemUiController.setStatusBarColor(
+        systemUiController.setSystemBarsColor(
             color = uiColor,
             darkIcons = darkTheme
         )
