@@ -4,7 +4,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
+import androidx.compose.material.primarySurface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColors(
     primary = Purple200,
@@ -35,6 +38,15 @@ fun TopMoviesComposeTheme(
     val colors = when (darkTheme) {
         true -> DarkColorPalette
         false -> LightColorPalette
+    }
+
+    val uiColor = colors.primarySurface
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = uiColor,
+            darkIcons = darkTheme
+        )
     }
 
     MaterialTheme(
