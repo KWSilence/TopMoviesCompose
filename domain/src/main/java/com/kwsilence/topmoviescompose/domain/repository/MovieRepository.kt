@@ -4,8 +4,8 @@ import com.kwsilence.topmoviescompose.domain.model.LoadMode
 import com.kwsilence.topmoviescompose.domain.model.Movie
 import com.kwsilence.topmoviescompose.domain.model.MovieDetails
 import com.kwsilence.topmoviescompose.domain.model.MoviesPage
-import java.util.Date
 import kotlinx.coroutines.flow.Flow
+import java.util.Date
 
 interface MovieRepository {
     suspend fun getPopularMovies(

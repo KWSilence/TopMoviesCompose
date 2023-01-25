@@ -2,7 +2,7 @@ package com.kwsilence.topmoviescompose.data.api.model
 
 import com.google.gson.annotations.SerializedName
 
-data class ApiMovieDetails (
+data class ApiMovieDetails(
     val adult: Boolean,
     @SerializedName("backdrop_path")
     val backdropPath: String?,

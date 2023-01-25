@@ -32,7 +32,8 @@ class MovieLocalDataSourceImpl(
                         )
                     }
                 }
-            })
+            }
+        )
     }
 
     override suspend fun getMovieById(movieId: Int): MovieEntity? =

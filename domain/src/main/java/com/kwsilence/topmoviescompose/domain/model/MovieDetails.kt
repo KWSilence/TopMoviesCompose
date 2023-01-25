@@ -2,7 +2,7 @@ package com.kwsilence.topmoviescompose.domain.model
 
 import java.util.Date
 
-data class MovieDetails (
+data class MovieDetails(
     val adult: Boolean,
     val backdropPath: String?,
     val id: Int,

@@ -11,11 +11,17 @@ class ScheduleMovieWatchingUseCase(
     private val notificationScheduler: NotificationScheduler,
     private val timeValidator: ScheduleTimeValidator
 ) {
-    suspend operator fun invoke(movie: Movie?, time: Date) {
+    suspend operator fun invoke(movie: Movie?, time: Date, uriString: String? = null) {
         movie ?: throw Exception("Movie not found")
         val validationResult = timeValidator.validate(time)
         if (!validationResult.isValid) throw Exception(validationResult.error)
         repository.scheduleMovieById(movie.id, time)
-        notificationScheduler.schedule(movie.id, time, "Time to watch movie!", movie.title)
+        notificationScheduler.schedule(
+            id = movie.id,
+            date = time,
+            title = "Time to watch movie!",
+            text = movie.title,
+            uriString = uriString
+        )
     }
 }

@@ -8,9 +8,9 @@ import com.kwsilence.topmoviescompose.domain.model.Movie
 import com.kwsilence.topmoviescompose.domain.model.MovieDetails
 import com.kwsilence.topmoviescompose.domain.model.MoviesPage
 import com.kwsilence.topmoviescompose.domain.repository.MovieRepository
-import java.util.Date
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.util.Date
 
 class MovieRepositoryImpl(
     private val remoteRepository: MovieRemoteDataSource,
@@ -32,7 +32,8 @@ class MovieRepositoryImpl(
                             page = moviesPage.page,
                             posterUrl = remoteRepository.getImageUrl(
                                 movie.posterPath, imageWidth
-                            ), backdropUrl = remoteRepository.getImageUrl(
+                            ),
+                            backdropUrl = remoteRepository.getImageUrl(
                                 movie.backdropPath, imageWidth
                             )
                         )
@@ -128,7 +129,8 @@ class MovieRepositoryImpl(
         }
 
     private suspend fun <T, R> Result<T>.processResult(
-        onSuccess: suspend (T) -> R, onFailure: suspend (Throwable) -> Result<R>
+        onSuccess: suspend (T) -> R,
+        onFailure: suspend (Throwable) -> Result<R>
     ): Result<R> = when (isSuccess) {
         true -> getOrNull()?.let { result -> runCatching { onSuccess(result) } }
         false -> exceptionOrNull()?.let { onFailure(it) }
