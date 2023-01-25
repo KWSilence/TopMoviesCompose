@@ -19,6 +19,7 @@ fun TopMoviesNavHost(
     navController: NavHostController = rememberNavController()
 ) {
     val navGraph = NavGraph(navController)
+    val baseUri = "https://com.kwsilence.topmoviescompose"
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -34,7 +35,8 @@ fun TopMoviesNavHost(
                     type = NavType.IntType
                     nullable = false
                 }
-            )
+            ),
+            deepLinks = listOf(ScreenDeepLink.MovieDetails.toNavDeepLink())
         ) { entry ->
             MovieDetailsScreen(navGraph = navGraph, id = entry.arguments?.getInt("id"))
         }

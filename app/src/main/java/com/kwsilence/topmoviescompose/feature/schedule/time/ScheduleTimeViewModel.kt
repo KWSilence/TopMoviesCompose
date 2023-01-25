@@ -11,6 +11,7 @@ import com.kwsilence.topmoviescompose.domain.model.toMovie
 import com.kwsilence.topmoviescompose.domain.usecase.movie.GetMovieDetailsUseCase
 import com.kwsilence.topmoviescompose.domain.usecase.schedule.DeleteScheduleUseCase
 import com.kwsilence.topmoviescompose.domain.usecase.schedule.ScheduleMovieWatchingUseCase
+import com.kwsilence.topmoviescompose.navigation.ScreenDeepLink
 import com.kwsilence.topmoviescompose.util.toEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,7 +70,15 @@ class ScheduleTimeViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 runCatching {
-                    scheduleMovieWatchingUseCase(state.movie?.toMovie(), dateTime)
+                    val movie = state.movie?.toMovie()
+                    val uriString = movie?.id?.let { id ->
+                        ScreenDeepLink.MovieDetails.buildUriString(movieId = id)
+                    }
+                    scheduleMovieWatchingUseCase(
+                        movie = movie,
+                        time = dateTime,
+                        uriString = uriString
+                    )
                 }
             }.onSuccess {
                 state = state.copy(scheduleCompleted = true.toEvent())

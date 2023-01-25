@@ -11,7 +11,6 @@ import org.koin.core.context.startKoin
 import timber.log.Timber
 
 // todo on complete: move all strings and styles, mb add custom exception
-// todo add on notification click show movie details screen
 class TopMoviesApp : Application() {
     override fun onCreate() {
         super.onCreate()
