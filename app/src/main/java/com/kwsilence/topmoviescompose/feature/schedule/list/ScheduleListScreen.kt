@@ -91,18 +91,12 @@ fun ScheduleListScreen(navGraph: NavGraph) {
             when (movieList.isEmpty()) {
                 true -> {
                     item {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(5.dp),
-                            text = stringResource(id = R.string.no_scheduled_movies),
-                            textAlign = TextAlign.Center
-                        )
+                        NoScheduledMoviesCard()
                     }
                 }
                 false -> {
                     items(movieList) { movie ->
-                        ScheduledMovieRow(
+                        ScheduledMovieCard(
                             movie = movie,
                             onMovieClick = { navGraph.openMovieDetails(movie.id) },
                             onScheduleClick = { navGraph.openScheduleTime(movie.id) },
@@ -116,12 +110,7 @@ fun ScheduleListScreen(navGraph: NavGraph) {
 }
 
 @Composable
-fun ScheduledMovieRow(
-    movie: Movie,
-    onMovieClick: () -> Unit,
-    onScheduleClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
+private fun ScheduleListItemCard(content: @Composable () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -129,8 +118,19 @@ fun ScheduledMovieRow(
         border = BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colors.onSurface.copy(alpha = 0.2f)
-        )
-    ) {
+        ),
+        content = content
+    )
+}
+
+@Composable
+fun ScheduledMovieCard(
+    movie: Movie,
+    onMovieClick: () -> Unit,
+    onScheduleClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    ScheduleListItemCard {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -162,5 +162,18 @@ fun ScheduledMovieRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun NoScheduledMoviesCard() {
+    ScheduleListItemCard {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp),
+            text = stringResource(id = R.string.no_scheduled_movies),
+            textAlign = TextAlign.Center
+        )
     }
 }
