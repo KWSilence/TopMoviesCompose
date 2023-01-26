@@ -50,8 +50,11 @@ private val titleTextStyle = TextStyle.Default.copy(
     fontWeight = FontWeight.Bold
 )
 
+@Composable
 private fun Date?.toScheduleString(): String =
-    this?.let { date -> FormatUtils.formatScheduleDate(date) } ?: "None"
+    this?.let { date ->
+        FormatUtils.formatScheduleDate(date)
+    } ?: stringResource(id = R.string.date_not_presented)
 
 @Composable
 fun ScheduleListScreen(navGraph: NavGraph) {
