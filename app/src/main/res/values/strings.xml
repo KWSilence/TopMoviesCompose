@@ -1,3 +1,54 @@
 <resources>
-    <string name="app_name">TopMoviesCompose</string>
+    <string name="app_name">Top Movies</string>
+
+    // screen title strings
+    <string name="title_popular_movies">Popular movies</string>
+    <string name="title_scheduled_movies">Scheduled movies</string>
+    <string name="title_movie_details">Movie details</string>
+    <string name="title_schedule_watching">Schedule watching</string>
+
+    // movie list strings
+    <string name="date_not_presented">None</string>
+    <string name="overview_not_presented">Overview is not presented</string>
+    <string name="schedule_watching">Schedule watching</string>
+    <string name="retry_loading">Retry loading</string>
+    <string name="retry">Retry</string>
+
+    // movie details strings
+    <string name="property_vote">Vote</string>
+    <string name="property_popularity">Popularity</string>
+    <string name="property_runtime">Runtime</string>
+    <string name="property_status">Status</string>
+    <string name="property_budget">Budget</string>
+    <string name="property_revenue">Revenue</string>
+    <string name="property_original_language">Original Language</string>
+    <string name="property_original_title">Original Title</string>
+    <string name="property_genres">Genres</string>
+    <string name="property_overview">Overview</string>
+    <string name="property_not_presented">Not presented</string>
+
+    // schedule time strings
+    <string name="message_movie_scheduled">Movie scheduled</string>
+    <string name="message_movie_schedule_deleted">Movie schedule deleted</string>
+    <string name="dialog_delete_schedule_title">Delete scheduled movie watching?</string>
+    <string name="dialog_delete_schedule_message">\'%s\' on %s</string>
+    <string name="dialog_schedule_title">Schedule movie watching?</string>
+    <string name="dialog_schedule_message">\'%s\' on %s</string>
+    <string name="day_not_set">Day is not set</string>
+    <string name="time_not_set">Time is not set</string>
+    <string name="previous_schedule">Previous: %s</string>
+    <string name="submit_schedule">Submit schedule</string>
+    <string name="description_delete_icon">Delete</string>
+
+    // schedule list strings
+    <string name="no_scheduled_movies">No scheduled movies</string>
+
+    // error strings
+    <string name="movie_id_not_found">Movie ID not found :(</string>
+    <string name="pull_to_refresh">Pull to refresh</string>
+    <string name="error_local_movie_not_found">Local movie not found</string>
+    <string name="error_unknown_error">Something went wrong</string>
+    <string name="error_timeout">Timeout, try later</string>
+    <string name="error_host_connection">Connection to server failed</string>
+    <string name="error_internet_connection">Check your internet connection</string>
 </resources>

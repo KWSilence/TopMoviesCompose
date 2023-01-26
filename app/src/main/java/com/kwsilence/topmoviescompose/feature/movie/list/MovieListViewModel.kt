@@ -9,6 +9,7 @@ import com.kwsilence.topmoviescompose.domain.model.LoadMode
 import com.kwsilence.topmoviescompose.domain.model.Movie
 import com.kwsilence.topmoviescompose.domain.model.MoviesPage
 import com.kwsilence.topmoviescompose.domain.usecase.movie.GetPopularMovieListUseCase
+import com.kwsilence.topmoviescompose.exception.toTopMoviesError
 import com.kwsilence.topmoviescompose.util.toEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,7 +63,7 @@ class MovieListViewModel(
             },
             retry = retry,
             onFailure = { error ->
-                state = state.copy(isLoading = false, error = error.localizedMessage.toEvent())
+                state = state.copy(isLoading = false, error = error.toTopMoviesError().toEvent())
             }
         )
     }
@@ -84,7 +85,7 @@ class MovieListViewModel(
             },
             onFailure = { error ->
                 state = state.copy(
-                    isRefreshing = false, error = error.localizedMessage.toEvent()
+                    isRefreshing = false, error = error.toTopMoviesError().toEvent()
                 )
             },
             force = force

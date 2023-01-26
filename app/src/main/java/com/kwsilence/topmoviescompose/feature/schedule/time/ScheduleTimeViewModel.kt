@@ -11,6 +11,7 @@ import com.kwsilence.topmoviescompose.domain.model.toMovie
 import com.kwsilence.topmoviescompose.domain.usecase.movie.GetMovieDetailsUseCase
 import com.kwsilence.topmoviescompose.domain.usecase.schedule.DeleteScheduleUseCase
 import com.kwsilence.topmoviescompose.domain.usecase.schedule.ScheduleMovieWatchingUseCase
+import com.kwsilence.topmoviescompose.exception.toTopMoviesError
 import com.kwsilence.topmoviescompose.navigation.ScreenDeepLink
 import com.kwsilence.topmoviescompose.util.toEvent
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ class ScheduleTimeViewModel(
             }.onSuccess { movie ->
                 state = state.copy(movie = movie, dateTime = movie.scheduled ?: getDateWithOffset())
             }.onFailure { error ->
-                state = state.copy(error = error.localizedMessage.toEvent())
+                state = state.copy(error = error.toTopMoviesError().toEvent())
                 Timber.e(error)
             }
         }
@@ -85,7 +86,7 @@ class ScheduleTimeViewModel(
             }.onFailure { error ->
                 state = state.copy(
                     scheduleCompleted = false.toEvent(),
-                    error = error.localizedMessage.toEvent()
+                    error = error.toTopMoviesError().toEvent()
                 )
                 Timber.e(error)
             }
@@ -96,14 +97,14 @@ class ScheduleTimeViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 runCatching {
-                    deleteScheduleUseCase(state.movie?.id)
+                    state.movie?.id?.let { deleteScheduleUseCase(it) }
                 }
             }.onSuccess {
                 state = state.copy(deleteCompleted = true.toEvent())
             }.onFailure { error ->
                 state = state.copy(
                     deleteCompleted = false.toEvent(),
-                    error = error.localizedMessage.toEvent()
+                    error = error.toTopMoviesError().toEvent()
                 )
                 Timber.e(error)
             }

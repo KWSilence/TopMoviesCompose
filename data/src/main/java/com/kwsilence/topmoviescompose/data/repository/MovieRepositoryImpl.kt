@@ -1,5 +1,7 @@
 package com.kwsilence.topmoviescompose.data.repository
 
+import com.kwsilence.topmoviescompose.data.exception.LocalMovieNotFoundException
+import com.kwsilence.topmoviescompose.data.exception.UnknownException
 import com.kwsilence.topmoviescompose.data.repository.local.MovieLocalDataSource
 import com.kwsilence.topmoviescompose.data.repository.remote.MovieRemoteDataSource
 import com.kwsilence.topmoviescompose.data.storage.entity.ScheduleEntity
@@ -77,19 +79,20 @@ class MovieRepositoryImpl(
                     localRepository.run {
                         addOrUpdateMovies(listOf(movieEntity))
                         getScheduledMovieById(id)
-                    } ?: throw Exception("Local movie not found")
+                    } ?: throw LocalMovieNotFoundException(movieId = id)
                 }
             }
             false -> {
                 localMovieEntity?.let { movie ->
                     Result.success(movie)
-                } ?: throw Exception("Local movie not found")
+                } ?: throw LocalMovieNotFoundException(movieId = id)
             }
         }.map { movieEntity -> movieEntity.toMovieDetails() }
     }
 
     override suspend fun scheduleMovieById(movieId: Int, time: Date) {
-        localRepository.getMovieById(movieId) ?: throw Exception("Local movie not found")
+        localRepository.getMovieById(movieId)
+            ?: throw LocalMovieNotFoundException(movieId = movieId)
         val scheduleEntity = ScheduleEntity(movieId, time)
         localRepository.upsertSchedule(scheduleEntity)
     }
@@ -133,8 +136,8 @@ class MovieRepositoryImpl(
         onFailure: suspend (Throwable) -> Result<R>
     ): Result<R> = when (isSuccess) {
         true -> getOrNull()?.let { result -> runCatching { onSuccess(result) } }
-        false -> exceptionOrNull()?.let { onFailure(it) }
-    } ?: Result.failure(Exception("Something wrong"))
+        false -> exceptionOrNull()?.let { exception -> onFailure(exception) }
+    } ?: Result.failure(UnknownException())
 
     private suspend fun <T, R> Result<T>.processResult(
         onSuccess: suspend (T) -> R

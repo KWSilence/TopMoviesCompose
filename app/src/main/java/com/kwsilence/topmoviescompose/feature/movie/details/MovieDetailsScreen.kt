@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -35,7 +36,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.MovieDetails
+import com.kwsilence.topmoviescompose.exception.getErrorString
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
 import com.kwsilence.topmoviescompose.navigation.scaffold.TopMoviesScaffold
@@ -74,17 +77,20 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
     val viewModel: MovieDetailsViewModel = koinViewModel()
     val state = viewModel.state
 
-    state.error?.content?.let { errorMessage ->
-        LocalContext.current.showToast(errorMessage)
+    state.error?.content?.let { error ->
+        LocalContext.current.showToast(error.getErrorString())
     }
-    val refreshState = rememberPullRefreshState(
-        refreshing = state.isRefreshing,
-        onRefresh = { id?.let { movieId -> viewModel.getMovieDetails(id = movieId, force = true) } }
-    )
+    val refreshState = rememberPullRefreshState(refreshing = state.isRefreshing, onRefresh = {
+        id?.let { movieId ->
+            viewModel.getMovieDetails(
+                id = movieId, force = true
+            )
+        }
+    })
 
     TopMoviesScaffold(
         navController = navGraph.navController,
-        title = Screen.MovieDetails.title,
+        title = stringResource(id = Screen.MovieDetails.titleResId),
     ) {
         Box(
             modifier = Modifier
@@ -93,7 +99,7 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
             contentAlignment = Alignment.Center
         ) {
             when (id) {
-                null -> Text(text = "Film ID not found :(")
+                null -> Text(text = stringResource(id = R.string.movie_id_not_found))
                 else -> {
                     val detailsState = viewModel.getFlowMovieDetails(id)
                         .collectAsState(initial = state.details)
@@ -107,7 +113,7 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
                             ) {
                                 when (state.error) {
                                     null -> viewModel.getMovieDetails(id)
-                                    else -> Text(text = "Pull to refresh")
+                                    else -> Text(text = stringResource(id = R.string.pull_to_refresh))
                                 }
                             }
                         }
@@ -150,7 +156,7 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
                     Text(
                         text = details.releaseDate?.let { releaseDate ->
                             FormatUtils.formatMovieReleaseDate(releaseDate)
-                        } ?: "None",
+                        } ?: stringResource(id = R.string.date_not_presented),
                         style = dateTextStyle
                     )
 
@@ -162,37 +168,67 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         Column {
-                            PropertyText(property = "Vote", value = details.voteCount)
-                            PropertyText(property = "Popularity", value = details.popularity)
+                            PropertyText(
+                                property = stringResource(id = R.string.property_vote),
+                                value = details.voteCount
+                            )
+                            PropertyText(
+                                property = stringResource(id = R.string.property_popularity),
+                                value = details.popularity
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(3.dp))
-                    PropertyText(property = "Runtime", value = details.runtime?.let { "$it min" })
-                    PropertyText(property = "Status", value = details.status)
+                    PropertyText(
+                        property = stringResource(id = R.string.property_runtime),
+                        value = details.runtime?.let { "$it min" }
+                    )
+                    PropertyText(
+                        property = stringResource(id = R.string.property_status),
+                        value = details.status
+                    )
                     Spacer(modifier = Modifier.height(3.dp))
-                    PropertyText(property = "Budget", value = details.budget?.moneyToString())
-                    PropertyText(property = "Revenue", value = details.revenue?.moneyToString())
+                    PropertyText(
+                        property = stringResource(id = R.string.property_budget),
+                        value = details.budget?.moneyToString()
+                    )
+                    PropertyText(
+                        property = stringResource(id = R.string.property_revenue),
+                        value = details.revenue?.moneyToString()
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
-            PropertyText(property = "Original Language", value = details.originalLang)
-            PropertyText(property = "Original Title", value = details.originalTitle)
+            PropertyText(
+                property = stringResource(id = R.string.property_original_language),
+                value = details.originalLang
+            )
+            PropertyText(
+                property = stringResource(id = R.string.property_original_title),
+                value = details.originalTitle
+            )
             Spacer(modifier = Modifier.height(5.dp))
-            PropertyText(property = "Genres", value = details.genres?.joinToString { it.name })
+            PropertyText(
+                property = stringResource(id = R.string.property_genres),
+                value = details.genres?.joinToString { it.name }
+            )
             Spacer(modifier = Modifier.height(10.dp))
-            Text(text = "Overview:", style = overviewPropertyTextStyle)
+            Text(
+                text = "${stringResource(id = R.string.property_overview)}:",
+                style = overviewPropertyTextStyle
+            )
             Text(
                 modifier = Modifier
                     .padding(vertical = 5.dp)
                     .weight(1f),
-                text = details.overview ?: "Overview is not presented.",
+                text = details.overview ?: stringResource(id = R.string.property_not_presented),
                 style = overviewTextStyle
             )
         }
         OutlinedButtonWithText(
             modifier = Modifier.fillMaxWidth(),
             text = when (val schedule = details.scheduled) {
-                null -> "Schedule watching"
+                null -> stringResource(id = R.string.schedule_watching)
                 else -> FormatUtils.formatScheduleDate(schedule)
             },
             onClick = { navGraph.openScheduleTime(details.id) }
@@ -205,7 +241,7 @@ private fun PropertyText(property: String, value: Any?) {
     Text(
         text = buildAnnotatedString {
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append("$property: ") }
-            append(value?.toString() ?: "Not presented")
+            append(value?.toString() ?: stringResource(id = R.string.property_not_presented))
         },
         style = propertyTextStyle
     )

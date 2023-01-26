@@ -7,8 +7,7 @@ class DeleteScheduleUseCase(
     private val repository: MovieRepository,
     private val notificationScheduler: NotificationScheduler
 ) {
-    suspend operator fun invoke(movieId: Int?) {
-        movieId ?: throw Exception("Movie not found")
+    suspend operator fun invoke(movieId: Int) {
         repository.deleteScheduleByMovieId(movieId)
         notificationScheduler.cancel(movieId)
     }

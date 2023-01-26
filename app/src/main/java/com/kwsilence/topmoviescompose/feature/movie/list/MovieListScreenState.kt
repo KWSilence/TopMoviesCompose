@@ -1,6 +1,7 @@
 package com.kwsilence.topmoviescompose.feature.movie.list
 
 import com.kwsilence.topmoviescompose.domain.model.Movie
+import com.kwsilence.topmoviescompose.exception.TopMoviesError
 import com.kwsilence.topmoviescompose.util.Event
 
 data class MovieListScreenState(
@@ -10,5 +11,5 @@ data class MovieListScreenState(
     val showRetry: Boolean = false,
     val currentPage: Int = 1,
     val canLoadMore: Boolean = true,
-    val error: Event<String>? = null
+    val error: Event<TopMoviesError>? = null
 )

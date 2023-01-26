@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kwsilence.topmoviescompose.domain.model.LoadMode
 import com.kwsilence.topmoviescompose.domain.usecase.movie.GetMovieDetailsUseCase
+import com.kwsilence.topmoviescompose.exception.toTopMoviesError
 import com.kwsilence.topmoviescompose.util.toEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,7 +29,7 @@ class MovieDetailsViewModel(
     fun getMovieDetails(id: Int, force: Boolean = false) {
         if (state.isRefreshing || !force && (state.details != null || state.error != null)) return
         val onFailure: (Throwable) -> Unit = { error ->
-            state = state.copy(isRefreshing = false, error = error.localizedMessage.toEvent())
+            state = state.copy(isRefreshing = false, error = error.toTopMoviesError().toEvent())
             Timber.e(error)
         }
         viewModelScope.launch {

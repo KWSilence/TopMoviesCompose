@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kwsilence.topmoviescompose.R
+import com.kwsilence.topmoviescompose.exception.getErrorString
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
 import com.kwsilence.topmoviescompose.navigation.scaffold.TopMoviesScaffold
@@ -67,15 +69,17 @@ fun ScheduleTimeScreen(
     val state = viewModel.state
     var dialogState by remember { mutableStateOf(ScheduleTimeDialogState.NONE) }
 
-    state.error?.content?.let { errorMessage ->
-        LocalContext.current.showToast(errorMessage)
+    state.error?.content?.let { error ->
+        LocalContext.current.showToast(error.getErrorString())
     }
 
     when {
         state.scheduleCompleted.content == true -> {
-            "Movie scheduled\n${state.dateTime.toScheduleString()}"
+            stringResource(id = R.string.message_movie_scheduled)
         }
-        state.deleteCompleted.content == true -> "Movie schedule deleted"
+        state.deleteCompleted.content == true -> {
+            stringResource(id = R.string.message_movie_schedule_deleted)
+        }
         else -> null
     }?.let { message ->
         LocalContext.current.showToast(message)
@@ -85,16 +89,22 @@ fun ScheduleTimeScreen(
     when (dialogState) {
         ScheduleTimeDialogState.DELETE -> {
             SubmitDialog(
-                title = "Delete scheduled movie watching?",
-                message = "'${state.movie?.title}' on ${state.movie?.scheduled.toScheduleString()}",
+                title = stringResource(id = R.string.dialog_delete_schedule_title),
+                message = stringResource(id = R.string.dialog_delete_schedule_message).format(
+                    state.movie?.title,
+                    state.movie?.scheduled.toScheduleString()
+                ),
                 onDismiss = { dialogState = ScheduleTimeDialogState.NONE },
                 onPositive = { viewModel.deleteSchedule() }
             )
         }
         ScheduleTimeDialogState.SUBMIT -> {
             SubmitDialog(
-                title = "Schedule movie watching?",
-                message = "'${state.movie?.title}' on ${state.dateTime.toScheduleString()}",
+                title = stringResource(id = R.string.dialog_schedule_title),
+                message = stringResource(id = R.string.dialog_schedule_message).format(
+                    state.movie?.title,
+                    state.dateTime.toScheduleString()
+                ),
                 onDismiss = { dialogState = ScheduleTimeDialogState.NONE },
                 onPositive = { viewModel.submitTime() }
             )
@@ -104,13 +114,13 @@ fun ScheduleTimeScreen(
 
     TopMoviesScaffold(
         navController = navGraph.navController,
-        title = Screen.ScheduleTime.title,
+        title = stringResource(id = Screen.ScheduleTime.titleResId),
         topBarActions = when (state.movie?.scheduled) {
             null -> null
             else -> listOf(
                 TopMoviesTopAppBarItem(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete),
-                    description = "Delete",
+                    description = stringResource(id = R.string.description_delete_icon),
                     onClick = { dialogState = ScheduleTimeDialogState.DELETE }
                 )
             )
@@ -120,7 +130,7 @@ fun ScheduleTimeScreen(
             when (id) {
                 null -> Text(
                     modifier = Modifier.align(Alignment.Center),
-                    text = "Film ID not found :("
+                    text = stringResource(id = R.string.movie_id_not_found)
                 )
                 else -> {
                     when (state.movie == null && state.error == null) {
@@ -155,7 +165,7 @@ private fun DatePickerButton(state: ScheduleTimeScreenState, viewModel: Schedule
     )
     OutlinedButtonWithText(
         modifier = Modifier.fillMaxWidth(),
-        text = state.dateTime?.toDayString() ?: "Day is not set",
+        text = state.dateTime?.toDayString() ?: stringResource(id = R.string.day_not_set),
         onClick = { datePicker.show() }
     )
 }
@@ -171,7 +181,7 @@ private fun TimePickerButton(state: ScheduleTimeScreenState, viewModel: Schedule
     )
     OutlinedButtonWithText(
         modifier = Modifier.fillMaxWidth(),
-        text = state.dateTime?.toTimeString() ?: "Time is not set",
+        text = state.dateTime?.toTimeString() ?: stringResource(id = R.string.time_not_set),
         onClick = { timePicker.show() }
     )
 }
@@ -202,13 +212,15 @@ private fun BoxScope.ScheduleTimeView(
         Spacer(modifier = Modifier.height(20.dp))
         state.movie?.scheduled?.let { schedule ->
             Text(
-                text = "Previous: ${FormatUtils.formatScheduleDate(schedule)}",
+                text = stringResource(id = R.string.previous_schedule).format(
+                    FormatUtils.formatScheduleDate(schedule)
+                ),
                 style = previousScheduleTextStyle
             )
         }
         OutlinedButtonWithText(
             modifier = Modifier.fillMaxWidth(),
-            text = "Submit schedule",
+            text = stringResource(id = R.string.submit_schedule),
             onClick = { onSubmit() }
         )
     }

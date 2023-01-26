@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.kwsilence.topmoviescompose.domain.model.Movie
 import com.kwsilence.topmoviescompose.domain.usecase.schedule.DeleteScheduleUseCase
 import com.kwsilence.topmoviescompose.domain.usecase.schedule.GetScheduledMovieListUseCase
+import com.kwsilence.topmoviescompose.exception.toTopMoviesError
 import com.kwsilence.topmoviescompose.util.toEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +38,7 @@ class ScheduleListViewModel(
             }.onSuccess {
                 state = state.copy(deletedMovieSchedule = movie.toEvent())
             }.onFailure { error ->
-                state = state.copy(error = error.localizedMessage.toEvent())
+                state = state.copy(error = error.toTopMoviesError().toEvent())
                 Timber.e(error)
             }
         }

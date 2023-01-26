@@ -2,6 +2,7 @@ package com.kwsilence.topmoviescompose.feature.schedule.time
 
 import android.icu.util.Calendar
 import com.kwsilence.topmoviescompose.domain.model.MovieDetails
+import com.kwsilence.topmoviescompose.exception.TopMoviesError
 import com.kwsilence.topmoviescompose.util.Event
 import com.kwsilence.topmoviescompose.util.toEvent
 import java.util.Date
@@ -11,7 +12,7 @@ data class ScheduleTimeScreenState(
     val movie: MovieDetails? = null,
     val scheduleCompleted: Event<Boolean> = false.toEvent(),
     val deleteCompleted: Event<Boolean> = false.toEvent(),
-    val error: Event<String>? = null
+    val error: Event<TopMoviesError>? = null
 ) {
     private val calendar: Calendar = Calendar.getInstance().apply { dateTime?.let { time = it } }
 

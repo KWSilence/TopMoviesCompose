@@ -26,12 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.Movie
+import com.kwsilence.topmoviescompose.exception.getErrorString
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
 import com.kwsilence.topmoviescompose.navigation.bottom.TopMoviesBottomNavigationItem
@@ -61,17 +63,19 @@ fun ScheduleListScreen(navGraph: NavGraph) {
     var movieToDelete: Movie? by remember { mutableStateOf(null) }
 
     state.error?.content?.let { error ->
-        LocalContext.current.showToast(error)
+        LocalContext.current.showToast(error.getErrorString())
     }
-    state.deletedMovieSchedule?.content?.let { movie ->
-        val scheduleString = movie.scheduled.toScheduleString()
-        LocalContext.current.showToast("Schedule on $scheduleString\nwas deleted")
+    state.deletedMovieSchedule?.content?.let {
+        LocalContext.current.showToast(stringResource(id = R.string.message_movie_schedule_deleted))
     }
 
     movieToDelete?.let { movie ->
         SubmitDialog(
-            title = "Delete scheduled movie watching?",
-            message = "'${movie.title}' on ${movie.scheduled.toScheduleString()}",
+            title = stringResource(id = R.string.dialog_delete_schedule_title),
+            message = stringResource(id = R.string.dialog_delete_schedule_message).format(
+                movie.title,
+                movie.scheduled.toScheduleString()
+            ),
             onDismiss = { movieToDelete = null },
             onPositive = { viewModel.deleteSchedule(movie) }
         )
@@ -79,7 +83,7 @@ fun ScheduleListScreen(navGraph: NavGraph) {
 
     TopMoviesScaffold(
         navController = navGraph.navController,
-        title = Screen.ScheduleList.title,
+        title = stringResource(id = Screen.ScheduleList.titleResId),
         showBack = false,
         bottomNavigationItemList = TopMoviesBottomNavigationItem.mainBottomNavigation
     ) {
@@ -91,7 +95,7 @@ fun ScheduleListScreen(navGraph: NavGraph) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(5.dp),
-                            text = "No scheduled movies",
+                            text = stringResource(id = R.string.no_scheduled_movies),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -153,7 +157,7 @@ fun ScheduledMovieRow(
                         .clickable { onDeleteClick() }
                         .padding(vertical = 5.dp, horizontal = 10.dp),
                     painter = painterResource(id = R.drawable.ic_delete),
-                    contentDescription = null,
+                    contentDescription = stringResource(id = R.string.description_delete_icon),
                     tint = MaterialTheme.colors.primary
                 )
             }

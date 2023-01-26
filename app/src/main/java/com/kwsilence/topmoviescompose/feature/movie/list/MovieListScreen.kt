@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +39,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.Movie
+import com.kwsilence.topmoviescompose.exception.getErrorString
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
 import com.kwsilence.topmoviescompose.navigation.bottom.TopMoviesBottomNavigationItem
@@ -73,8 +76,8 @@ fun MovieListScreen(navGraph: NavGraph) {
     viewModel.saveMovieListChanges(movieList = movieListState.value)
     val movieList = state.movieList
 
-    state.error?.content?.let { errorMessage ->
-        LocalContext.current.showToast(errorMessage)
+    state.error?.content?.let { error ->
+        LocalContext.current.showToast(error.getErrorString())
     }
     val refreshState = rememberPullRefreshState(
         refreshing = state.isRefreshing,
@@ -83,7 +86,7 @@ fun MovieListScreen(navGraph: NavGraph) {
 
     TopMoviesScaffold(
         navController = navGraph.navController,
-        title = Screen.MovieList.title,
+        title = stringResource(id = Screen.MovieList.titleResId),
         showBack = false,
         bottomNavigationItemList = TopMoviesBottomNavigationItem.mainBottomNavigation
     ) {
@@ -106,7 +109,10 @@ fun MovieListScreen(navGraph: NavGraph) {
                 }
             }
             if (state.error != null && movieList.isEmpty()) {
-                Text(modifier = Modifier.align(Alignment.Center), text = "Pull to refresh")
+                Text(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = stringResource(id = R.string.pull_to_refresh)
+                )
             }
             PullRefreshIndicator(
                 refreshing = state.isRefreshing,
@@ -159,7 +165,7 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                         Text(
                             text = movie.releaseDate?.let { releaseDate ->
                                 FormatUtils.formatMovieReleaseDate(releaseDate)
-                            } ?: "None",
+                            } ?: stringResource(id = R.string.date_not_presented),
                             style = dateTextStyle
                         )
                     }
@@ -167,7 +173,7 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                 Spacer(modifier = Modifier.height(5.dp))
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = movie.overview ?: "Overview is not presented.",
+                    text = movie.overview ?: stringResource(id = R.string.overview_not_presented),
                     style = overviewTextStyle,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -175,7 +181,7 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                 OutlinedButtonWithText(
                     modifier = Modifier.fillMaxWidth(),
                     text = when (val schedule = movie.scheduled) {
-                        null -> "Schedule watching"
+                        null -> stringResource(id = R.string.schedule_watching)
                         else -> FormatUtils.formatScheduleDate(schedule)
                     },
                     onClick = { navGraph.openScheduleTime(movie.id) }
@@ -187,8 +193,8 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
 
 @Composable
 private fun RetryCard(
-    messageText: String = "Retry loading",
-    retryText: String = "Retry",
+    messageText: String = stringResource(id = R.string.retry_loading),
+    retryText: String = stringResource(id = R.string.retry),
     onRetry: () -> Unit
 ) {
     MovieListItemCard {
