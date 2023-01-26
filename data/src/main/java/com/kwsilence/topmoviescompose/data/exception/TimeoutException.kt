@@ -1,3 +1,5 @@
 package com.kwsilence.topmoviescompose.data.exception
 
-class TimeoutException(cause: Throwable) : Exception(cause)
+import com.kwsilence.topmoviescompose.domain.exception.RemoteSourceException
+
+class TimeoutException(cause: Throwable) : RemoteSourceException(cause = cause)

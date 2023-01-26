@@ -10,7 +10,6 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import timber.log.Timber
 
-// todo on complete: move all strings and styles, mb add custom exception
 class TopMoviesApp : Application() {
     override fun onCreate() {
         super.onCreate()

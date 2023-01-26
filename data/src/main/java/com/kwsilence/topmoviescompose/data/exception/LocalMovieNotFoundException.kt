@@ -1,5 +1,7 @@
 package com.kwsilence.topmoviescompose.data.exception
 
+import com.kwsilence.topmoviescompose.domain.exception.LocalSourceException
+
 class LocalMovieNotFoundException(
     movieId: Int? = null
-) : Exception("Local movie not found" + (movieId?.let { "(id=$movieId)" } ?: ""))
+) : LocalSourceException(message = "Local movie not found (id=$movieId)")

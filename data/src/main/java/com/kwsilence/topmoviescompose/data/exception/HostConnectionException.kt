@@ -1,3 +1,5 @@
 package com.kwsilence.topmoviescompose.data.exception
 
-class HostConnectionException(cause: Throwable) : Exception(cause)
+import com.kwsilence.topmoviescompose.domain.exception.RemoteSourceException
+
+class HostConnectionException(cause: Throwable) : RemoteSourceException(cause = cause)

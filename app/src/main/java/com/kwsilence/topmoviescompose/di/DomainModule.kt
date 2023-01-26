@@ -10,8 +10,8 @@ import com.kwsilence.topmoviescompose.domain.validation.ScheduleTimeValidatorImp
 import org.koin.dsl.module
 
 val domainModule = module {
-    factory { GetPopularMovieListUseCase(get()) }
-    factory { GetMovieDetailsUseCase(get()) }
+    factory { GetPopularMovieListUseCase(get(), get()) }
+    factory { GetMovieDetailsUseCase(get(), get()) }
     factory { ScheduleMovieWatchingUseCase(get(), get(), get()) }
     factory { GetScheduledMovieListUseCase(get()) }
     factory { DeleteScheduleUseCase(get(), get()) }

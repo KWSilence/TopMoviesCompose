@@ -8,6 +8,7 @@ import com.kwsilence.topmoviescompose.data.api.model.ApiMoviesPage
 import com.kwsilence.topmoviescompose.data.exception.HostConnectionException
 import com.kwsilence.topmoviescompose.data.exception.TimeoutException
 import com.kwsilence.topmoviescompose.data.exception.UnknownException
+import com.kwsilence.topmoviescompose.domain.exception.RemoteSourceException
 import retrofit2.Call
 import retrofit2.awaitResponse
 import java.net.ConnectException
@@ -35,22 +36,20 @@ class MovieRemoteDataSourceImpl(private val api: MovieApi) : MovieRemoteDataSour
         return MovieRetrofit.baseImageUrl + size + path
     }
 
-    private suspend fun <T> Call<T>.awaitResult(): Result<T> {
-        val responseResult = runCatching { awaitResponse() }
-        return runCatching {
-            responseResult.exceptionOrNull()?.let { exception ->
-                when (exception) {
-                    is SocketTimeoutException -> throw TimeoutException(exception)
-                    is ConnectException -> throw HostConnectionException(exception)
-                    else -> throw exception
-                }
-            }
-            responseResult.getOrNull()?.let { response ->
+    private suspend fun <T> Call<T>.awaitResult(): Result<T> =
+        runCatching { awaitResponse() }.fold(
+            onSuccess = { response ->
                 when (response.isSuccessful) {
-                    true -> response.body()
-                    false -> throw Exception(response.message())
-                }
-            } ?: throw UnknownException()
-        }
-    }
+                    true -> response.body()?.let { Result.success(it) }
+                    false -> Result.failure(Exception(response.message()))
+                } ?: Result.failure(UnknownException())
+            },
+            onFailure = { exception ->
+                when (exception) {
+                    is SocketTimeoutException -> TimeoutException(exception)
+                    is ConnectException -> HostConnectionException(exception)
+                    else -> RemoteSourceException(exception)
+                }.let { Result.failure(it) }
+            }
+        )
 }
