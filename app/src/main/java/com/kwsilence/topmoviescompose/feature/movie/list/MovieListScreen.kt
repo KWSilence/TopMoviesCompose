@@ -14,21 +14,30 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -140,12 +149,19 @@ private fun MovieListItemCard(content: @Composable () -> Unit) {
 @Composable
 private fun MovieCard(navGraph: NavGraph, movie: Movie) {
     MovieListItemCard {
+        val collapsedOverflow: MutableState<Boolean?> = rememberSaveable { mutableStateOf(null) }
+        val collapsed = collapsedOverflow.value
         Row(
             modifier = Modifier
                 .clickable { navGraph.openMovieDetails(movie.id) }
                 .padding(5.dp)
                 .fillMaxWidth()
-                .height(imageWidth / imageRatio)
+                .run {
+                    when (collapsed) {
+                        false -> wrapContentHeight()
+                        else -> height(imageWidth / imageRatio)
+                    }
+                }
         ) {
             AsyncImageWithProgress(
                 modifier = Modifier
@@ -171,11 +187,16 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                     }
                 }
                 Spacer(modifier = Modifier.height(5.dp))
-                Text(
-                    modifier = Modifier.weight(1f),
+                CollapsingText(
+                    modifier = Modifier.run {
+                        when (collapsedOverflow.value) {
+                            false -> this
+                            else -> weight(1f)
+                        }
+                    },
                     text = movie.overview ?: stringResource(id = R.string.overview_not_presented),
                     style = overviewTextStyle,
-                    overflow = TextOverflow.Ellipsis
+                    collapseState = collapsedOverflow
                 )
                 Spacer(modifier = Modifier.height(5.dp))
                 OutlinedButtonWithText(
@@ -185,6 +206,47 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                         else -> FormatUtils.formatScheduleDate(schedule)
                     },
                     onClick = { navGraph.openScheduleTime(movie.id) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollapsingText(
+    modifier: Modifier = Modifier,
+    text: String,
+    style: TextStyle = TextStyle.Default,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    collapseState: MutableState<Boolean?> = remember { mutableStateOf(null) }
+) {
+    val collapsed = collapseState.value
+    Column(modifier.clickable { collapseState.value = collapsed?.let { !it } }) {
+        Text(
+            modifier = Modifier.run {
+                when (collapseState.value) {
+                    false -> this
+                    else -> weight(1f)
+                }
+            },
+            text = text,
+            style = style,
+            overflow = overflow,
+            onTextLayout = { textLayoutResult ->
+                collapseState.value = when (textLayoutResult.hasVisualOverflow) {
+                    true -> collapsed ?: true
+                    false -> collapsed
+                }
+            }
+        )
+        if (collapsed != null) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                val collapseRotate = if (collapsed) 0f else 180f
+                val collapseDescription = if (collapsed) "Expand" else "Collapse"
+                Icon(
+                    modifier = Modifier.rotate(collapseRotate),
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = collapseDescription
                 )
             }
         }
