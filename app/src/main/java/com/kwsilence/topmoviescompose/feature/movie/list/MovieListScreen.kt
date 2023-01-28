@@ -149,8 +149,8 @@ private fun MovieListItemCard(content: @Composable () -> Unit) {
 @Composable
 private fun MovieCard(navGraph: NavGraph, movie: Movie) {
     MovieListItemCard {
-        val collapsedOverflow: MutableState<Boolean?> = rememberSaveable { mutableStateOf(null) }
-        val collapsed = collapsedOverflow.value
+        val collapsedOverviewState = rememberSaveable { mutableStateOf<Boolean?>(null) }
+        val collapsed = collapsedOverviewState.value
         Row(
             modifier = Modifier
                 .clickable { navGraph.openMovieDetails(movie.id) }
@@ -189,14 +189,14 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                 Spacer(modifier = Modifier.height(5.dp))
                 CollapsingText(
                     modifier = Modifier.run {
-                        when (collapsedOverflow.value) {
-                            false -> this
+                        when (collapsed) {
+                            false -> wrapContentHeight()
                             else -> weight(1f)
                         }
                     },
                     text = movie.overview ?: stringResource(id = R.string.overview_not_presented),
                     style = overviewTextStyle,
-                    collapseState = collapsedOverflow
+                    collapseState = collapsedOverviewState
                 )
                 Spacer(modifier = Modifier.height(5.dp))
                 OutlinedButtonWithText(
@@ -221,11 +221,15 @@ private fun CollapsingText(
     collapseState: MutableState<Boolean?> = remember { mutableStateOf(null) }
 ) {
     val collapsed = collapseState.value
-    Column(modifier.clickable { collapseState.value = collapsed?.let { !it } }) {
+    Column(
+        modifier = modifier.run {
+            collapsed?.let { clickable { collapseState.value = !it } } ?: this
+        }
+    ) {
         Text(
             modifier = Modifier.run {
-                when (collapseState.value) {
-                    false -> this
+                when (collapsed) {
+                    false -> wrapContentHeight()
                     else -> weight(1f)
                 }
             },
@@ -242,7 +246,10 @@ private fun CollapsingText(
         if (collapsed != null) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 val collapseRotate = if (collapsed) 0f else 180f
-                val collapseDescription = if (collapsed) "Expand" else "Collapse"
+                val collapseDescription = when (collapsed) {
+                    true -> R.string.description_expand
+                    false -> R.string.description_collapse
+                }.let { descriptionRes -> stringResource(id = descriptionRes) }
                 Icon(
                     modifier = Modifier.rotate(collapseRotate),
                     imageVector = Icons.Filled.ArrowDropDown,

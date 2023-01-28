@@ -13,6 +13,8 @@
     <string name="schedule_watching">Schedule watching</string>
     <string name="retry_loading">Retry loading</string>
     <string name="retry">Retry</string>
+    <string name="description_expand">Expand</string>
+    <string name="description_collapse">Collapse</string>
 
     // movie details strings
     <string name="property_vote">Vote</string>
