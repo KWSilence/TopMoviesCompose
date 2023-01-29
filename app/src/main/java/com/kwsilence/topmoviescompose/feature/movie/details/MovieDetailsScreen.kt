@@ -1,5 +1,8 @@
 package com.kwsilence.topmoviescompose.feature.movie.details
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,9 +24,16 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -34,8 +44,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.MovieDetails
 import com.kwsilence.topmoviescompose.exception.getErrorString
@@ -132,6 +144,15 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
 
 @Composable
 private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
+    val showFullScreenPoster = remember { mutableStateOf(false) }
+
+    if (showFullScreenPoster.value) {
+        ZoomablePosterDialog(
+            posterUrl = details.posterUrl,
+            onDismiss = { showFullScreenPoster.value = false }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -145,6 +166,7 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 AsyncImageWithProgress(
                     modifier = Modifier
+                        .clickable { showFullScreenPoster.value = true }
                         .requiredWidth(imageWidth)
                         .aspectRatio(imageRatio)
                         .clip(MaterialTheme.shapes.medium),
@@ -233,6 +255,52 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
             },
             onClick = { navGraph.openScheduleTime(details.id) }
         )
+    }
+}
+
+@Composable
+private fun ZoomablePosterDialog(posterUrl: String?, onDismiss: () -> Unit) {
+    var scale by remember { mutableStateOf(1f) }
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+
+    val interactionSource = remember { MutableInteractionSource() }
+    Dialog(onDismissRequest = onDismiss) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onDismiss
+                )
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(1f..4f)
+
+                        val maxX = imageSize.width * (scale - 1) / 2
+                        val maxY = imageSize.height * (scale - 1) / 2
+
+                        offsetX = (offsetX + pan.x).coerceIn(-maxX..maxX)
+                        offsetY = (offsetY + pan.y).coerceIn(-maxY..maxY)
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            AsyncImageWithProgress(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onSizeChanged { imageSize = it }
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offsetX,
+                        translationY = offsetY
+                    ),
+                url = posterUrl
+            )
+        }
     }
 }
 
