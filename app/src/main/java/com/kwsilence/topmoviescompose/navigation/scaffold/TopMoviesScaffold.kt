@@ -6,12 +6,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.primarySurface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kwsilence.topmoviescompose.navigation.bottom.TopMoviesBottomNavigationBar
 import com.kwsilence.topmoviescompose.navigation.bottom.TopMoviesBottomNavigationItem
@@ -75,4 +79,25 @@ fun TopMoviesScaffold(
             content = content
         )
     }
+}
+
+@Composable
+@Preview
+private fun TopMoviesScaffoldPreview() {
+    TopMoviesScaffold(
+        navController = rememberNavController(),
+        title = "Test title",
+        topBarActions = listOf(
+            TopMoviesTopAppBarItem(
+                imageVector = Icons.Filled.Search,
+                description = null,
+                onClick = {}
+            )
+        ),
+        showTopBar = true,
+        showBack = true,
+        bottomNavigationItemList = TopMoviesBottomNavigationItem.mainBottomNavigation,
+        showBottomBar = true,
+        content = { Surface(modifier = Modifier.fillMaxSize(), content = {}) }
+    )
 }

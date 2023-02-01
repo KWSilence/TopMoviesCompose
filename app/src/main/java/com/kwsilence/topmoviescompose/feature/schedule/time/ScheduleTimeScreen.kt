@@ -28,9 +28,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kwsilence.topmoviescompose.R
+import com.kwsilence.topmoviescompose.domain.model.stubMovieDetails
 import com.kwsilence.topmoviescompose.exception.getErrorString
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
@@ -50,8 +52,9 @@ private val previousScheduleTextStyle = TextStyle.Default.copy(
     fontSize = 12.sp, lineHeight = 16.sp, fontStyle = FontStyle.Italic
 )
 
-private fun Date?.toScheduleString(): String? =
-    this?.let { date -> FormatUtils.formatScheduleDate(date) }
+private fun Date?.toScheduleString(): String? = this?.let { date ->
+    FormatUtils.formatScheduleDate(date)
+}
 
 private fun Date.toDayString(): String = FormatUtils.formatScheduleDay(this)
 private fun Date.toTimeString(): String = FormatUtils.formatScheduleTime(this)
@@ -74,12 +77,8 @@ fun ScheduleTimeScreen(
     }
 
     when {
-        state.scheduleCompleted.content == true -> {
-            stringResource(id = R.string.message_movie_scheduled)
-        }
-        state.deleteCompleted.content == true -> {
-            stringResource(id = R.string.message_movie_schedule_deleted)
-        }
+        state.scheduleCompleted.content == true -> stringResource(id = R.string.message_movie_scheduled)
+        state.deleteCompleted.content == true -> stringResource(id = R.string.message_movie_schedule_deleted)
         else -> null
     }?.let { message ->
         LocalContext.current.showToast(message)
@@ -87,28 +86,18 @@ fun ScheduleTimeScreen(
     }
 
     when (dialogState) {
-        ScheduleTimeDialogState.DELETE -> {
-            SubmitDialog(
-                title = stringResource(id = R.string.dialog_delete_schedule_title),
-                message = stringResource(id = R.string.dialog_delete_schedule_message).format(
-                    state.movie?.title,
-                    state.movie?.scheduled.toScheduleString()
-                ),
-                onDismiss = { dialogState = ScheduleTimeDialogState.NONE },
-                onPositive = { viewModel.deleteSchedule() }
-            )
-        }
-        ScheduleTimeDialogState.SUBMIT -> {
-            SubmitDialog(
-                title = stringResource(id = R.string.dialog_schedule_title),
-                message = stringResource(id = R.string.dialog_schedule_message).format(
-                    state.movie?.title,
-                    state.dateTime.toScheduleString()
-                ),
-                onDismiss = { dialogState = ScheduleTimeDialogState.NONE },
-                onPositive = { viewModel.submitTime() }
-            )
-        }
+        ScheduleTimeDialogState.DELETE -> DeleteScheduleDialog(
+            movieTitle = state.movie?.title,
+            scheduleDate = state.movie?.scheduled,
+            onDismiss = { dialogState = ScheduleTimeDialogState.NONE },
+            onSubmit = { viewModel.deleteSchedule() }
+        )
+        ScheduleTimeDialogState.SUBMIT -> ScheduleWatchingDialog(
+            movieTitle = state.movie?.title,
+            scheduleDate = state.dateTime,
+            onDismiss = { dialogState = ScheduleTimeDialogState.NONE },
+            onSubmit = { viewModel.submitTime() }
+        )
         else -> Unit
     }
 
@@ -144,7 +133,8 @@ fun ScheduleTimeScreen(
                         }
                         false -> ScheduleTimeView(
                             state = state,
-                            viewModel = viewModel,
+                            onSetDate = { year, month, day -> viewModel.setDate(year, month, day) },
+                            onSetTime = { hour, minute -> viewModel.setTime(hour, minute) },
                             onSubmit = { dialogState = ScheduleTimeDialogState.SUBMIT }
                         )
                     }
@@ -155,10 +145,49 @@ fun ScheduleTimeScreen(
 }
 
 @Composable
-private fun DatePickerButton(state: ScheduleTimeScreenState, viewModel: ScheduleTimeViewModel) {
+fun DeleteScheduleDialog(
+    movieTitle: String?,
+    scheduleDate: Date?,
+    onDismiss: () -> Unit,
+    onSubmit: () -> Unit
+) {
+    SubmitDialog(
+        title = stringResource(id = R.string.dialog_delete_schedule_title),
+        message = stringResource(id = R.string.dialog_delete_schedule_message).format(
+            movieTitle,
+            scheduleDate?.let { date -> FormatUtils.formatScheduleDate(date) }
+        ),
+        onDismiss = onDismiss,
+        onPositive = onSubmit
+    )
+}
+
+@Composable
+private fun ScheduleWatchingDialog(
+    movieTitle: String?,
+    scheduleDate: Date?,
+    onDismiss: () -> Unit,
+    onSubmit: () -> Unit
+) {
+    SubmitDialog(
+        title = stringResource(id = R.string.dialog_schedule_title),
+        message = stringResource(id = R.string.dialog_schedule_message).format(
+            movieTitle,
+            scheduleDate?.let { date -> FormatUtils.formatScheduleDate(date) }
+        ),
+        onDismiss = onDismiss,
+        onPositive = onSubmit
+    )
+}
+
+@Composable
+private fun DatePickerButton(
+    state: ScheduleTimeScreenState,
+    onSetDate: (year: Int, month: Int, day: Int) -> Unit
+) {
     val datePicker = DatePickerDialog(
         LocalContext.current,
-        { _, year, month, day -> viewModel.setDate(year, month, day) },
+        { _, year, month, day -> onSetDate(year, month, day) },
         state.year,
         state.month,
         state.day
@@ -171,10 +200,13 @@ private fun DatePickerButton(state: ScheduleTimeScreenState, viewModel: Schedule
 }
 
 @Composable
-private fun TimePickerButton(state: ScheduleTimeScreenState, viewModel: ScheduleTimeViewModel) {
+private fun TimePickerButton(
+    state: ScheduleTimeScreenState,
+    onSetTime: (hour: Int, minute: Int) -> Unit
+) {
     val timePicker = TimePickerDialog(
         LocalContext.current,
-        { _, hour, minute -> viewModel.setTime(hour, minute) },
+        { _, hour, minute -> onSetTime(hour, minute) },
         state.hour,
         state.minute,
         true
@@ -189,7 +221,8 @@ private fun TimePickerButton(state: ScheduleTimeScreenState, viewModel: Schedule
 @Composable
 private fun BoxScope.ScheduleTimeView(
     state: ScheduleTimeScreenState,
-    viewModel: ScheduleTimeViewModel,
+    onSetDate: (year: Int, month: Int, day: Int) -> Unit,
+    onSetTime: (hour: Int, minute: Int) -> Unit,
     onSubmit: () -> Unit
 ) {
     Column(
@@ -206,9 +239,9 @@ private fun BoxScope.ScheduleTimeView(
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(10.dp))
-        DatePickerButton(state = state, viewModel = viewModel)
+        DatePickerButton(state = state, onSetDate = onSetDate)
         Spacer(modifier = Modifier.height(10.dp))
-        TimePickerButton(state = state, viewModel = viewModel)
+        TimePickerButton(state = state, onSetTime = onSetTime)
         Spacer(modifier = Modifier.height(20.dp))
         state.movie?.scheduled?.let { schedule ->
             Text(
@@ -222,6 +255,22 @@ private fun BoxScope.ScheduleTimeView(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.submit_schedule),
             onClick = { onSubmit() }
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun ScheduleTimeViewPreview() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        ScheduleTimeView(
+            state = ScheduleTimeScreenState(
+                dateTime = Date(),
+                movie = stubMovieDetails.copy(title = "Movie title")
+            ),
+            onSetDate = { _, _, _ -> },
+            onSetTime = { _, _ -> },
+            onSubmit = {}
         )
     }
 }

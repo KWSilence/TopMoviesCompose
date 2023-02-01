@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -40,8 +41,19 @@ fun OutlinedButtonWithText(
             modifier = Modifier.fillMaxWidth(),
             text = text,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colors.primary,
+            color = color,
             style = textStyle
         )
     }
+}
+
+@Composable
+@Preview
+private fun OutlinedButtonWithTextPreview() {
+    OutlinedButtonWithText(
+        modifier = Modifier
+            .padding(5.dp),
+        text = "Button text",
+        onClick = {}
+    )
 }

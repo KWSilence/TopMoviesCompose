@@ -30,16 +30,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.Movie
+import com.kwsilence.topmoviescompose.domain.model.stubMovieDetails
+import com.kwsilence.topmoviescompose.domain.model.toMovie
 import com.kwsilence.topmoviescompose.exception.getErrorString
+import com.kwsilence.topmoviescompose.feature.schedule.time.DeleteScheduleDialog
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
 import com.kwsilence.topmoviescompose.navigation.bottom.TopMoviesBottomNavigationItem
 import com.kwsilence.topmoviescompose.navigation.scaffold.TopMoviesScaffold
 import com.kwsilence.topmoviescompose.ui.component.OutlinedButtonWithText
-import com.kwsilence.topmoviescompose.ui.component.SubmitDialog
 import com.kwsilence.topmoviescompose.ui.util.showToast
 import com.kwsilence.topmoviescompose.util.FormatUtils
 import org.koin.androidx.compose.koinViewModel
@@ -51,10 +54,9 @@ private val titleTextStyle = TextStyle.Default.copy(
 )
 
 @Composable
-private fun Date?.toScheduleString(): String =
-    this?.let { date ->
-        FormatUtils.formatScheduleDate(date)
-    } ?: stringResource(id = R.string.date_not_presented)
+private fun Date?.toScheduleString(): String = this?.let { date ->
+    FormatUtils.formatScheduleDate(date)
+} ?: stringResource(id = R.string.date_not_presented)
 
 @Composable
 fun ScheduleListScreen(navGraph: NavGraph) {
@@ -73,14 +75,11 @@ fun ScheduleListScreen(navGraph: NavGraph) {
     }
 
     movieToDelete?.let { movie ->
-        SubmitDialog(
-            title = stringResource(id = R.string.dialog_delete_schedule_title),
-            message = stringResource(id = R.string.dialog_delete_schedule_message).format(
-                movie.title,
-                movie.scheduled.toScheduleString()
-            ),
+        DeleteScheduleDialog(
+            movieTitle = movie.title,
+            scheduleDate = movie.scheduled,
             onDismiss = { movieToDelete = null },
-            onPositive = { viewModel.deleteSchedule(movie) }
+            onSubmit = { viewModel.deleteSchedule(movie) }
         )
     }
 
@@ -127,7 +126,7 @@ private fun ScheduleListItemCard(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun ScheduledMovieCard(
+private fun ScheduledMovieCard(
     movie: Movie,
     onMovieClick: () -> Unit,
     onScheduleClick: () -> Unit,
@@ -169,7 +168,7 @@ fun ScheduledMovieCard(
 }
 
 @Composable
-fun NoScheduledMoviesCard() {
+private fun NoScheduledMoviesCard() {
     ScheduleListItemCard {
         Text(
             modifier = Modifier
@@ -179,4 +178,15 @@ fun NoScheduledMoviesCard() {
             textAlign = TextAlign.Center
         )
     }
+}
+
+@Composable
+@Preview
+private fun ScheduledMovieCardPreview() {
+    ScheduledMovieCard(
+        movie = stubMovieDetails.toMovie().copy(title = "Movie title", scheduled = Date()),
+        onMovieClick = { },
+        onScheduleClick = { },
+        onDeleteClick = {}
+    )
 }

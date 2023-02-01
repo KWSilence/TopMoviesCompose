@@ -36,11 +36,16 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.ImageLoader
+import coil.imageLoader
 import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.Movie
+import com.kwsilence.topmoviescompose.domain.model.stubMovieDetails
+import com.kwsilence.topmoviescompose.domain.model.toMovie
 import com.kwsilence.topmoviescompose.exception.getErrorString
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
@@ -51,7 +56,9 @@ import com.kwsilence.topmoviescompose.ui.component.CircularProgressWithNumber
 import com.kwsilence.topmoviescompose.ui.component.OutlinedButtonWithText
 import com.kwsilence.topmoviescompose.ui.util.showToast
 import com.kwsilence.topmoviescompose.util.FormatUtils
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import java.util.Date
 
 private val imageWidth: Dp = 150.dp
 private const val imageRatio: Float = 2f / 3f
@@ -98,7 +105,11 @@ fun MovieListScreen(navGraph: NavGraph) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 itemsIndexed(movieList) { index, movie ->
                     if (index >= movieList.size - 1) viewModel.loadMoreMovies()
-                    MovieCard(navGraph = navGraph, movie = movie)
+                    MovieCard(
+                        movie = movie,
+                        onMovieClick = { navGraph.openMovieDetails(movie.id) },
+                        onScheduleClick = { navGraph.openScheduleTime(movie.id) }
+                    )
                 }
                 item {
                     if (state.showRetry)
@@ -138,11 +149,16 @@ private fun MovieListItemCard(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun MovieCard(navGraph: NavGraph, movie: Movie) {
+private fun MovieCard(
+    movie: Movie,
+    imageLoader: ImageLoader = get(),
+    onMovieClick: () -> Unit,
+    onScheduleClick: () -> Unit
+) {
     MovieListItemCard {
         Row(
             modifier = Modifier
-                .clickable { navGraph.openMovieDetails(movie.id) }
+                .clickable { onMovieClick() }
                 .padding(5.dp)
                 .fillMaxWidth()
                 .height(imageWidth / imageRatio)
@@ -152,13 +168,15 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                     .requiredWidth(imageWidth)
                     .aspectRatio(imageRatio)
                     .clip(MaterialTheme.shapes.medium),
-                url = movie.posterUrl
+                url = movie.posterUrl,
+                contentDescription = stringResource(id = R.string.description_poster),
+                imageLoader = imageLoader
             )
             Column(
                 modifier = Modifier.padding(5.dp)
             ) {
                 Row {
-                    CircularProgressWithNumber(progress = movie.voteAverage / 10f)
+                    CircularProgressWithNumber(progress = movie.voteAverage)
                     Spacer(modifier = Modifier.width(5.dp))
                     Column {
                         Text(text = movie.title, style = titleTextStyle)
@@ -184,7 +202,7 @@ private fun MovieCard(navGraph: NavGraph, movie: Movie) {
                         null -> stringResource(id = R.string.schedule_watching)
                         else -> FormatUtils.formatScheduleDate(schedule)
                     },
-                    onClick = { navGraph.openScheduleTime(movie.id) }
+                    onClick = { onScheduleClick() }
                 )
             }
         }
@@ -233,4 +251,34 @@ private fun LoadingCard() {
             CircularProgressIndicator()
         }
     }
+}
+
+@Composable
+@Preview
+private fun MovieCardPreview() {
+    val date = Date()
+    MovieCard(
+        movie = stubMovieDetails.toMovie().copy(
+            title = "Movie title",
+            releaseDate = date,
+            voteAverage = 0.75f,
+            overview = "Movie overview",
+            scheduled = date
+        ),
+        imageLoader = LocalContext.current.imageLoader,
+        onMovieClick = { },
+        onScheduleClick = { }
+    )
+}
+
+@Composable
+@Preview
+private fun RetryCardPreview() {
+    RetryCard(onRetry = { })
+}
+
+@Composable
+@Preview
+private fun LoadingCardPreview() {
+    LoadingCard()
 }

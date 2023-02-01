@@ -6,8 +6,13 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.kwsilence.topmoviescompose.R
 
 @Composable
 fun TopMoviesTopAppBar(
@@ -35,9 +40,29 @@ fun TopMoviesTopAppBar(
     )
 }
 
-private fun navigateUpIcon(navController: NavHostController): @Composable () -> Unit =
-    {
-        IconButton(onClick = { navController.navigateUp() }) {
-            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
-        }
+private fun navigateUpIcon(navController: NavHostController): @Composable () -> Unit = {
+    IconButton(onClick = { navController.navigateUp() }) {
+        Icon(
+            imageVector = Icons.Filled.ArrowBack,
+            contentDescription = stringResource(id = R.string.description_back)
+        )
     }
+}
+
+@Composable
+@Preview
+private fun TopMoviesTopAppBarPreview() {
+    TopMoviesTopAppBar(
+        navController = rememberNavController(),
+        title = "App bar title",
+        showBack = true,
+        actions = listOf(
+            TopMoviesTopAppBarItem(
+                imageVector = Icons.Filled.Search,
+                description = null,
+                onClick = {}
+            )
+        ),
+        visible = true
+    )
+}

@@ -17,3 +17,29 @@ fun MovieDetails.toMovie(): Movie =
         backdropUrl = backdropUrl,
         posterUrl = posterUrl
     )
+
+val stubMovieDetails
+    get() = MovieDetails(
+        adult = false,
+        backdropPath = null,
+        id = 0,
+        originalLang = "",
+        originalTitle = "",
+        overview = null,
+        popularity = 0f,
+        posterPath = null,
+        releaseDate = null,
+        title = "",
+        voteAverage = 0f,
+        voteCount = 0,
+        homepage = null,
+        budget = null,
+        runtime = null,
+        revenue = null,
+        genres = null,
+        status = null,
+        tagline = null,
+        backdropUrl = null,
+        posterUrl = null,
+        scheduled = null
+    )

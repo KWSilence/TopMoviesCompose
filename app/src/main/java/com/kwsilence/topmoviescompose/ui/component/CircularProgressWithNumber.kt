@@ -8,6 +8,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
@@ -15,22 +16,32 @@ import kotlin.math.roundToInt
 @Composable
 fun CircularProgressWithNumber(modifier: Modifier = Modifier, progress: Float) {
     Box(modifier = modifier) {
+        val progressModifier = Modifier.size(30.dp)
+        val strokeWidth = 2.dp
+        val fontSize = 12.sp
+        val progressColor = MaterialTheme.colors.primary
         CircularProgressIndicator(
-            modifier = Modifier.size(30.dp),
+            modifier = progressModifier,
             progress = 1f,
-            strokeWidth = 2.dp,
-            color = MaterialTheme.colors.primary.copy(alpha = 0.25f)
+            strokeWidth = strokeWidth,
+            color = progressColor.copy(alpha = 0.25f)
         )
         CircularProgressIndicator(
-            modifier = Modifier.size(30.dp),
+            modifier = progressModifier,
             progress = progress,
-            strokeWidth = 2.dp,
-            color = MaterialTheme.colors.primary
+            strokeWidth = strokeWidth,
+            color = progressColor
         )
         Text(
             modifier = Modifier.align(Alignment.Center),
             text = (progress * 100).roundToInt().toString(),
-            fontSize = 12.sp
+            fontSize = fontSize
         )
     }
+}
+
+@Composable
+@Preview
+private fun CircularProgressWithNumberPreview() {
+    CircularProgressWithNumber(progress = 0.5f)
 }

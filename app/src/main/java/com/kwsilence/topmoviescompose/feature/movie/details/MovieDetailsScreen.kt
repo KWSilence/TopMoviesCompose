@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -33,11 +34,15 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.ImageLoader
+import coil.imageLoader
 import com.kwsilence.topmoviescompose.R
 import com.kwsilence.topmoviescompose.domain.model.MovieDetails
+import com.kwsilence.topmoviescompose.domain.model.stubMovieDetails
 import com.kwsilence.topmoviescompose.exception.getErrorString
 import com.kwsilence.topmoviescompose.navigation.NavGraph
 import com.kwsilence.topmoviescompose.navigation.Screen
@@ -47,7 +52,9 @@ import com.kwsilence.topmoviescompose.ui.component.CircularProgressWithNumber
 import com.kwsilence.topmoviescompose.ui.component.OutlinedButtonWithText
 import com.kwsilence.topmoviescompose.ui.util.showToast
 import com.kwsilence.topmoviescompose.util.FormatUtils
+import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import java.util.Date
 
 private val imageWidth: Dp = 150.dp
 private const val imageRatio: Float = 2f / 3f
@@ -117,7 +124,10 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
                                 }
                             }
                         }
-                        else -> MovieDetailsInfo(navGraph, details = details)
+                        else -> MovieDetailsInfo(
+                            details = details,
+                            onScheduleClick = { navGraph.openScheduleTime(details.id) }
+                        )
                     }
                     PullRefreshIndicator(
                         refreshing = state.isRefreshing,
@@ -131,7 +141,11 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
 }
 
 @Composable
-private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
+private fun MovieDetailsInfo(
+    details: MovieDetails,
+    imageLoader: ImageLoader = get(),
+    onScheduleClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -148,7 +162,9 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
                         .requiredWidth(imageWidth)
                         .aspectRatio(imageRatio)
                         .clip(MaterialTheme.shapes.medium),
-                    url = details.posterUrl
+                    url = details.posterUrl,
+                    contentDescription = stringResource(id = R.string.description_poster),
+                    imageLoader = imageLoader
                 )
                 Spacer(modifier = Modifier.width(5.dp))
                 Column {
@@ -164,7 +180,7 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
                     Row {
                         CircularProgressWithNumber(
                             modifier = Modifier.align(Alignment.CenterVertically),
-                            progress = details.voteAverage / 10f
+                            progress = details.voteAverage
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         Column {
@@ -231,7 +247,7 @@ private fun MovieDetailsInfo(navGraph: NavGraph, details: MovieDetails) {
                 null -> stringResource(id = R.string.schedule_watching)
                 else -> FormatUtils.formatScheduleDate(schedule)
             },
-            onClick = { navGraph.openScheduleTime(details.id) }
+            onClick = { onScheduleClick() }
         )
     }
 }
@@ -245,4 +261,30 @@ private fun PropertyText(property: String, value: Any?) {
         },
         style = propertyTextStyle
     )
+}
+
+@Composable
+@Preview
+private fun MovieDetailsInfoPreview() {
+    val date = Date()
+    Surface {
+        MovieDetailsInfo(
+            details = stubMovieDetails.copy(
+                title = "Movie title",
+                releaseDate = date,
+                voteAverage = 0.7f,
+                voteCount = 100,
+                popularity = 111f,
+                runtime = 120,
+                revenue = 2000,
+                budget = 1000,
+                status = "Released",
+                originalLang = "us",
+                originalTitle = "Movie title",
+                overview = "Movie overview"
+            ),
+            onScheduleClick = { },
+            imageLoader = LocalContext.current.imageLoader
+        )
+    }
 }
