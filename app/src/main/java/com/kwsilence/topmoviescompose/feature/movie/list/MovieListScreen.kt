@@ -77,10 +77,7 @@ private val overviewTextStyle = TextStyle.Default.copy(
 @Composable
 fun MovieListScreen(navGraph: NavGraph) {
     val viewModel: MovieListViewModel = koinViewModel()
-    val state = viewModel.state
-    val movieListState = viewModel.getFlowMovieList(state.currentPage)
-        .collectAsState(initial = state.movieList)
-    viewModel.saveMovieListChanges(movieList = movieListState.value)
+    val state = viewModel.movieListState.collectAsState().value
     val movieList = state.movieList
 
     state.error?.content?.let { error ->

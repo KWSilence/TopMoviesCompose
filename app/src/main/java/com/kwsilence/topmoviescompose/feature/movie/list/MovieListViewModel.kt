@@ -1,27 +1,40 @@
 package com.kwsilence.topmoviescompose.feature.movie.list
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kwsilence.topmoviescompose.domain.model.LoadMode
-import com.kwsilence.topmoviescompose.domain.model.Movie
 import com.kwsilence.topmoviescompose.domain.model.MoviesPage
 import com.kwsilence.topmoviescompose.domain.usecase.movie.GetPopularMovieListUseCase
 import com.kwsilence.topmoviescompose.exception.toTopMoviesError
 import com.kwsilence.topmoviescompose.util.toEvent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.Date
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MovieListViewModel(
     private val getPopularMovieListUseCase: GetPopularMovieListUseCase
 ) : ViewModel() {
-    var state: MovieListScreenState by mutableStateOf(MovieListScreenState())
-        private set
+    private val _state = MutableStateFlow(MovieListScreenState())
+    private val state get() = _state.value
+    private val _movieList = _state.flatMapLatest {
+        getPopularMovieListUseCase.getFlow(it.currentPage)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    val movieListState = combine(_state, _movieList) { state, movieList ->
+        if (state.movieList.size <= movieList.size && state.movieList != movieList) {
+            _state.update { it.copy(movieList = movieList) }
+        }
+        state
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(3000), MovieListScreenState())
 
     private companion object {
         const val DEFAULT_IMAGE_WIDTH = 400
@@ -34,36 +47,29 @@ class MovieListViewModel(
         refresh(force = false)
     }
 
-    fun getFlowMovieList(page: Int) = getPopularMovieListUseCase.getFlow(page)
-
-    fun saveMovieListChanges(movieList: List<Movie>) {
-        viewModelScope.launch {
-            val updatedMovieList = state.movieList.map { movie ->
-                movieList.find { newMovie -> newMovie.id == movie.id } ?: movie
-            }
-            state = state.copy(movieList = updatedMovieList)
-        }
-    }
-
     fun loadMoreMovies(retry: Boolean = false) {
+        val nextPage = state.currentPage + 1
         val canRetry = retry || !state.showRetry
         if (!state.canLoadMore || !canRetry || state.isLoading || state.isRefreshing) return
-        val nextPage = state.currentPage + 1
         getMovieList(
-            onStart = { state = state.copy(isLoading = true, showRetry = false) },
+            onStart = { _state.update { it.copy(isLoading = true) } },
             nextPage = nextPage,
             onSuccess = { moviesPage ->
-                state = state.copy(
-                    movieList = state.movieList + moviesPage.movieList,
-                    canLoadMore = moviesPage.canLoadMore,
-                    showRetry = false,
-                    isLoading = false,
-                    currentPage = nextPage
-                )
+                _state.update {
+                    it.copy(
+                        movieList = state.movieList + moviesPage.movieList,
+                        canLoadMore = moviesPage.canLoadMore,
+                        showRetry = false,
+                        isLoading = false,
+                        currentPage = nextPage
+                    )
+                }
             },
             retry = retry,
             onFailure = { error ->
-                state = state.copy(isLoading = false, error = error.toTopMoviesError().toEvent())
+                _state.update {
+                    it.copy(isLoading = false, error = error.toTopMoviesError().toEvent())
+                }
             }
         )
     }
@@ -72,21 +78,23 @@ class MovieListViewModel(
         if (state.isRefreshing || state.isLoading) return
         val initialPage = 1
         getMovieList(
-            onStart = { state = state.copy(isRefreshing = true) },
+            onStart = { _state.update { it.copy(isRefreshing = true) } },
             nextPage = initialPage,
             onSuccess = { moviesPage ->
-                state = state.copy(
-                    movieList = moviesPage.movieList,
-                    canLoadMore = moviesPage.canLoadMore,
-                    showRetry = false,
-                    isRefreshing = false,
-                    currentPage = initialPage
-                )
+                _state.update {
+                    it.copy(
+                        movieList = moviesPage.movieList,
+                        canLoadMore = moviesPage.canLoadMore,
+                        showRetry = false,
+                        isRefreshing = false,
+                        currentPage = initialPage
+                    )
+                }
             },
             onFailure = { error ->
-                state = state.copy(
-                    isRefreshing = false, error = error.toTopMoviesError().toEvent()
-                )
+                _state.update {
+                    it.copy(isRefreshing = false, error = error.toTopMoviesError().toEvent())
+                }
             },
             force = force
         )
@@ -97,7 +105,7 @@ class MovieListViewModel(
         nextPage: Int,
         onSuccess: (MoviesPage) -> Unit,
         onFailure: (Throwable) -> Unit,
-        onRequestDelay: () -> Unit = { state = state.copy(showRetry = state.canLoadMore) },
+        onRequestDelay: () -> Unit = { _state.update { it.copy(showRetry = it.canLoadMore) } },
         retry: Boolean = false,
         force: Boolean = false
     ) {
