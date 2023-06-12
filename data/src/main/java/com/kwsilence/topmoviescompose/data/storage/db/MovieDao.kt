@@ -3,10 +3,8 @@ package com.kwsilence.topmoviescompose.data.storage.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
-import com.kwsilence.topmoviescompose.data.storage.db.listener.OnMovieUpdateListener
 import com.kwsilence.topmoviescompose.data.storage.entity.MovieEntity
 import com.kwsilence.topmoviescompose.data.storage.entity.ScheduleEntity
 import com.kwsilence.topmoviescompose.data.storage.entity.ScheduledMovie
@@ -20,19 +18,6 @@ interface MovieDao {
     @Update
     suspend fun updateMovie(movie: MovieEntity)
 
-    @Transaction
-    suspend fun addOrUpdateMovies(
-        movieList: List<MovieEntity>,
-        onUpdateListener: OnMovieUpdateListener = OnMovieUpdateListener { newMovie, _ -> newMovie }
-    ) {
-        movieList.forEach { newMovie ->
-            when (val oldMovie = getMovieById(newMovie.id)) {
-                null -> addMovie(newMovie)
-                else -> updateMovie(onUpdateListener.onUpdate(newMovie, oldMovie))
-            }
-        }
-    }
-
     @Query("select * from movie_table where id = :id")
     suspend fun getMovieById(id: Int): MovieEntity?
 
@@ -42,7 +27,6 @@ interface MovieDao {
     @Upsert
     suspend fun upsertSchedule(scheduleEntity: ScheduleEntity)
 
-//    @Transaction
     @Query(
         "select * from movie_table left join schedule_table " +
             "on movie_table.id = schedule_table.movie_id " +
@@ -50,7 +34,6 @@ interface MovieDao {
     )
     suspend fun getScheduledMovieById(id: Int): ScheduledMovie?
 
-//    @Transaction
     @Query(
         "select * from movie_table left join schedule_table " +
             "on movie_table.id = schedule_table.movie_id " +
@@ -58,7 +41,6 @@ interface MovieDao {
     )
     fun getLiveScheduledMovieById(id: Int): Flow<ScheduledMovie?>
 
-//    @Transaction
     @Query(
         "select * from movie_table inner join schedule_table " +
             "on movie_table.id = schedule_table.movie_id " +
@@ -66,7 +48,6 @@ interface MovieDao {
     )
     suspend fun getScheduledMovieList(): List<ScheduledMovie>
 
-//    @Transaction
     @Query(
         "select * from movie_table inner join schedule_table " +
             "on movie_table.id = schedule_table.movie_id " +
@@ -74,7 +55,6 @@ interface MovieDao {
     )
     fun getLiveScheduledMovieList(): Flow<List<ScheduledMovie>>
 
-//    @Transaction
     @Query(
         "select * from movie_table left join schedule_table " +
             "on movie_table.id = schedule_table.movie_id " +
@@ -83,7 +63,6 @@ interface MovieDao {
     )
     suspend fun getPopularMovieListWithScheduleByPage(page: Int): List<ScheduledMovie>
 
-//    @Transaction
     @Query(
         "select * from movie_table left join schedule_table " +
             "on movie_table.id = schedule_table.movie_id " +
@@ -106,12 +85,6 @@ interface MovieDao {
 
     @Query("update movie_table set page = null")
     suspend fun resetPages()
-
-    @Transaction
-    suspend fun deleteNonScheduledMoviesWithResetPages() {
-        deleteNonScheduledMovies()
-        resetPages()
-    }
 
     @Query("delete from movie_table")
     suspend fun deleteAll()
