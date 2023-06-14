@@ -5,7 +5,7 @@ import androidx.compose.ui.res.stringResource
 
 data class TopMoviesError(
     val stringResId: Int? = null,
-    val exception: Throwable,
+    val exception: Throwable
 )
 
 @Composable

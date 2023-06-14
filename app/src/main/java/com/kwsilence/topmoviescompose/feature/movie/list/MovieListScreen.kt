@@ -58,19 +58,26 @@ import com.kwsilence.topmoviescompose.ui.util.showToast
 import com.kwsilence.topmoviescompose.util.FormatUtils
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.util.Date
 
 private val imageWidth: Dp = 150.dp
 private const val imageRatio: Float = 2f / 3f
 
 private val titleTextStyle = TextStyle.Default.copy(
-    fontSize = 14.sp, lineHeight = 18.sp, fontWeight = FontWeight.Bold
+    fontSize = 14.sp,
+    lineHeight = 18.sp,
+    fontWeight = FontWeight.Bold
 )
 private val dateTextStyle = TextStyle.Default.copy(
-    fontSize = 12.sp, fontWeight = FontWeight.Light, fontStyle = FontStyle.Italic
+    fontSize = 12.sp,
+    fontWeight = FontWeight.Light,
+    fontStyle = FontStyle.Italic
 )
 private val overviewTextStyle = TextStyle.Default.copy(
-    fontSize = 12.sp, lineHeight = 16.sp, textAlign = TextAlign.Justify
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    textAlign = TextAlign.Justify
 )
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -109,8 +116,9 @@ fun MovieListScreen(navGraph: NavGraph) {
                     )
                 }
                 item {
-                    if (state.showRetry)
+                    if (state.showRetry) {
                         RetryCard(onRetry = { viewModel.loadMoreMovies(retry = true) })
+                    }
                 }
                 item {
                     if (state.isLoading && state.canLoadMore) LoadingCard()
@@ -148,7 +156,7 @@ private fun MovieListItemCard(content: @Composable () -> Unit) {
 @Composable
 private fun MovieCard(
     movie: Movie,
-    imageLoader: ImageLoader = get(),
+    imageLoader: ImageLoader = koinInject(),
     onMovieClick: () -> Unit,
     onScheduleClick: () -> Unit
 ) {

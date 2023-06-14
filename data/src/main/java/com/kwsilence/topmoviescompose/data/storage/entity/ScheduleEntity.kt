@@ -21,6 +21,8 @@ import java.util.Date
 )
 @TypeConverters(DateConverter::class)
 data class ScheduleEntity(
-    @PrimaryKey @ColumnInfo(name = "movie_id") val movieId: Int,
+    @PrimaryKey
+    @ColumnInfo(name = "movie_id")
+    val movieId: Int,
     val time: Date?
 )

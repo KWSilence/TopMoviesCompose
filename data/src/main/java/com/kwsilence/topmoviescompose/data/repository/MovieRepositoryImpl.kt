@@ -33,10 +33,12 @@ class MovieRepositoryImpl(
                         movie.toEntity(
                             page = moviesPage.page,
                             posterUrl = remoteRepository.getImageUrl(
-                                movie.posterPath, imageWidth
+                                movie.posterPath,
+                                imageWidth
                             ),
                             backdropUrl = remoteRepository.getImageUrl(
-                                movie.backdropPath, imageWidth
+                                movie.backdropPath,
+                                imageWidth
                             )
                         )
                     }
@@ -70,10 +72,12 @@ class MovieRepositoryImpl(
                 remoteRepository.getMovieDetails(id).processResult { movieDetails ->
                     val movieEntity = movieDetails.toEntity(
                         posterUrl = remoteRepository.getImageUrl(
-                            movieDetails.posterPath, imageWidth
+                            movieDetails.posterPath,
+                            imageWidth
                         ),
                         backdropUrl = remoteRepository.getImageUrl(
-                            movieDetails.backdropPath, imageWidth
+                            movieDetails.backdropPath,
+                            imageWidth
                         )
                     )
                     localRepository.run {

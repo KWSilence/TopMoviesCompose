@@ -11,14 +11,12 @@ interface MovieApi {
     @GET("movie/popular")
     fun getPopularMovies(
         @Query("page") page: Int,
-        @Query("api_key") api_key: String,
-//        @Query("language") language: String
+        @Query("api_key") api_key: String
     ): Call<ApiMoviesPage>
 
     @GET("movie/{id}")
     fun getMovieDetails(
         @Path("id") id: Int,
-        @Query("api_key") api_key: String,
-//        @Query("language") language: String
+        @Query("api_key") api_key: String
     ): Call<ApiMovieDetails>
 }

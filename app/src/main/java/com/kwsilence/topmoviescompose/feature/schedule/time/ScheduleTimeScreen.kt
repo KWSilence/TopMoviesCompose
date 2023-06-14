@@ -46,10 +46,14 @@ import org.koin.androidx.compose.koinViewModel
 import java.util.Date
 
 private val titleTextStyle = TextStyle.Default.copy(
-    fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
+    fontWeight = FontWeight.Bold
 )
 private val previousScheduleTextStyle = TextStyle.Default.copy(
-    fontSize = 12.sp, lineHeight = 16.sp, fontStyle = FontStyle.Italic
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    fontStyle = FontStyle.Italic
 )
 
 private fun Date?.toScheduleString(): String? = this?.let { date ->

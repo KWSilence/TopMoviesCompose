@@ -54,13 +54,16 @@ import com.kwsilence.topmoviescompose.ui.util.showToast
 import com.kwsilence.topmoviescompose.util.FormatUtils
 import org.koin.androidx.compose.get
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.util.Date
 
 private val imageWidth: Dp = 150.dp
 private const val imageRatio: Float = 2f / 3f
 
 private val titleTextStyle = TextStyle.Default.copy(
-    fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
+    fontWeight = FontWeight.Bold
 )
 private val dateTextStyle = TextStyle.Default.copy(
     fontSize = 14.sp,
@@ -70,10 +73,13 @@ private val dateTextStyle = TextStyle.Default.copy(
 )
 private val propertyTextStyle = TextStyle.Default.copy(fontSize = 14.sp, lineHeight = 18.sp)
 private val overviewPropertyTextStyle = TextStyle.Default.copy(
-    fontSize = 14.sp, fontWeight = FontWeight.Bold
+    fontSize = 14.sp,
+    fontWeight = FontWeight.Bold
 )
 private val overviewTextStyle = TextStyle.Default.copy(
-    fontSize = 14.sp, lineHeight = 18.sp, textAlign = TextAlign.Justify
+    fontSize = 14.sp,
+    lineHeight = 18.sp,
+    textAlign = TextAlign.Justify
 )
 
 private fun Long.moneyToString() = FormatUtils.formatMoney(this)
@@ -90,14 +96,15 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
     val refreshState = rememberPullRefreshState(refreshing = state.isRefreshing, onRefresh = {
         id?.let { movieId ->
             viewModel.getMovieDetails(
-                id = movieId, force = true
+                id = movieId,
+                force = true
             )
         }
     })
 
     TopMoviesScaffold(
         navController = navGraph.navController,
-        title = stringResource(id = Screen.MovieDetails.titleResId),
+        title = stringResource(id = Screen.MovieDetails.titleResId)
     ) {
         Box(
             modifier = Modifier
@@ -143,7 +150,7 @@ fun MovieDetailsScreen(navGraph: NavGraph, id: Int?) {
 @Composable
 private fun MovieDetailsInfo(
     details: MovieDetails,
-    imageLoader: ImageLoader = get(),
+    imageLoader: ImageLoader = koinInject(),
     onScheduleClick: () -> Unit
 ) {
     Column(
